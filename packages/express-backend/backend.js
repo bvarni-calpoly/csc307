@@ -3,11 +3,8 @@ import express from "express";
 const app = express();
 const port = 8000;
 
+// Setup site
 app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
 
 app.listen(port, () => {
   console.log(
@@ -15,6 +12,7 @@ app.listen(port, () => {
   );
 });
 
+// Default user list
 const users = {
   users_list: [
     {
@@ -45,23 +43,43 @@ const users = {
   ]
 };
 
+// GET
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
 app.get("/users", (req, res) => {
   res.send(users);
 });
 
+app.get("/users/:id", (req, res) => {
+  const id = req.params["id"]; //or req.params.id
+  let result = findUserById(id);
+  if (result === undefined) {
+    res.status(404).send("Resource not found.");
+  } else {
+    res.send(result);
+  }
+});
+
+// POST
+app.post("/users", (req, res) => {
+  const userToAdd = req.body;
+  addUser(userToAdd);
+  res.send();
+});
+
+// Helper functions
 const findUserByName = (name) => {
   return users["users_list"].filter(
     (user) => user["name"] === name
   );
 };
 
-app.get("/users", (req, res) => {
-  const name = req.query.name;
-  if (name != undefined) {
-    let result = findUserByName(name);
-    result = { users_list: result };
-    res.send(result);
-  } else {
-    res.send(users);
-  }
-});
+const findUserById = (id) =>
+  users["users_list"].find((user) => user["id"] === id);
+
+const addUser = (user) => {
+  users["users_list"].push(user);
+  return user;
+};
